@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('header-list');
   const addBtn = document.getElementById('add-row');
-  const saveBtn = document.getElementById('save');
 
-  // 1. Load from Chrome Storage to preserve disabled headers
+  // 1. Load from Chrome Storage on initialization
   chrome.storage.local.get(['savedHeaders'], (result) => {
     const headers = result.savedHeaders || [];
     if (headers.length > 0) {
@@ -13,25 +12,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  addBtn.addEventListener('click', () => createRow('', '', true));
+  // Add new row and trigger a save
+  addBtn.addEventListener('click', () => {
+    createRow('', '', true);
+    saveAndApplyHeaders();
+  });
 
-  saveBtn.addEventListener('click', async () => {
+  // 2. The core Auto-Save logic (No alerts)
+  async function saveAndApplyHeaders() {
     const rows = container.querySelectorAll('.row');
     const headersToSet = [];
-    const allHeaders = []; // For storing UI state
+    const allHeaders = []; 
 
-    // 2. Loop through UI to build storage array and injection array
     rows.forEach(row => {
       const enabled = row.querySelector('.header-enable').checked;
       const name = row.querySelector('.header-name').value.trim();
       const value = row.querySelector('.header-value').value.trim();
 
-      // Save to UI state as long as it isn't completely blank
       if (name || value) {
         allHeaders.push({ name, value, enabled });
       }
 
-      // Only push to the network injector if checked AND has a name
       if (enabled && name) {
         headersToSet.push({
           header: name,
@@ -41,10 +42,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
 
-    // 3. Save the UI state to storage
+    // Save UI state locally
     chrome.storage.local.set({ savedHeaders: allHeaders });
 
-    // 4. Update the active network rules
+    // Build network rules
     const removeRuleIds = [1]; 
     const addRules = [];
 
@@ -65,13 +66,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
       await chrome.declarativeNetRequest.updateDynamicRules({ removeRuleIds, addRules });
-      alert('Headers applied successfully!');
     } catch (err) {
-      alert('Error saving headers: ' + err.message);
+      console.error('Failed to apply headers silently:', err);
     }
-  });
+  }
 
-  // Helper function to build the rows dynamically
+  // 3. Helper function to debounce typing inputs
+  function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+
+  // 4. Build rows and attach auto-save triggers to inputs
   function createRow(name, value, enabled) {
     const div = document.createElement('div');
     div.className = 'row';
@@ -84,7 +93,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       <button class="remove-btn" title="Delete Row">X</button>
     `;
     
-    div.querySelector('.remove-btn').addEventListener('click', () => div.remove());
+    // Auto-save when clicking the checkbox
+    div.querySelector('.header-enable').addEventListener('change', saveAndApplyHeaders);
+    
+    // Auto-save when typing, waiting 500ms after typing stops
+    div.querySelector('.header-name').addEventListener('input', debounce(saveAndApplyHeaders, 500));
+    div.querySelector('.header-value').addEventListener('input', debounce(saveAndApplyHeaders, 500));
+    
+    // Auto-save when removing a row
+    div.querySelector('.remove-btn').addEventListener('click', () => {
+      div.remove();
+      saveAndApplyHeaders();
+    });
+    
     container.appendChild(div);
   }
 });
