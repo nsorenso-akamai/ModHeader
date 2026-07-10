@@ -3,14 +3,13 @@
 <head>
   <meta charset="utf-8">
   <style>
-    body { font-family: Arial, sans-serif; width: 380px; padding: 12px; margin: 0; }
+    body { font-family: Arial, sans-serif; width: 550px; padding: 12px; margin: 0; }
     h3 { margin-top: 0; color: #333; margin-bottom: 12px; }
     .row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
-    .header-enable { cursor: pointer; width: 16px; height: 16px; margin: 0; }
-    input[type="text"] { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
-    button { padding: 6px 10px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; background: #f5f5f5; }
-    button.remove-btn { background: #ff4d4d; color: white; border: none; font-weight: bold; }
-    #add-row { width: 100%; margin-top: 5px; background: #e1e1e1; color: #333; font-weight: bold; border: none; padding: 8px; }
+    .header-enable { cursor: pointer; width: 16px; height: 16px; margin: 0; flex-shrink: 0; }
+    input[type="text"] { flex: 1; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; min-width: 0; }
+    button.remove-btn { padding: 6px 10px; cursor: pointer; border-radius: 4px; background: #ff4d4d; color: white; border: none; font-weight: bold; flex-shrink: 0; }
+    #add-row { width: 100%; margin-top: 5px; background: #e1e1e1; color: #333; font-weight: bold; border: none; padding: 8px; cursor: pointer; }
     #add-row:hover { background: #d4d4d4; }
   </style>
 </head>
