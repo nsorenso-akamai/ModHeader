@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Custom Header Injector",
+  "version": "1.0",
+  "description": "A simple tool to inject custom HTTP request headers globally.",
+  "permissions": [
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
